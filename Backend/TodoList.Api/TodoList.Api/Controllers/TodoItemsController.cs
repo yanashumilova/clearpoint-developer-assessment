@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using TodoList.Data;
 
@@ -12,12 +10,12 @@ namespace TodoList.Api.Controllers
   [ApiController]
   public class TodoItemsController : ControllerBase
   {
-    private readonly TodoContext _context;
+    private readonly ITodoItemService _dataService;
     private readonly ILogger<TodoItemsController> _logger;
 
-    public TodoItemsController(TodoContext context, ILogger<TodoItemsController> logger)
+    public TodoItemsController(ITodoItemService dataService, ILogger<TodoItemsController> logger)
     {
-      _context = context;
+      _dataService = dataService;
       _logger = logger;
     }
 
@@ -25,7 +23,7 @@ namespace TodoList.Api.Controllers
     [HttpGet]
     public async Task<IActionResult> GetTodoItems()
     {
-      var results = await _context.TodoItems.Where(x => !x.IsCompleted).ToListAsync();
+      var results = await _dataService.GetAllPending();
       return Ok(results);
     }
 
@@ -33,7 +31,7 @@ namespace TodoList.Api.Controllers
     [HttpGet("{id}")]
     public async Task<IActionResult> GetTodoItem(Guid id)
     {
-      var result = await _context.TodoItems.FindAsync(id);
+      var result = await _dataService.Get(id);
 
       if (result == null)
       {
@@ -52,16 +50,11 @@ namespace TodoList.Api.Controllers
         return BadRequest();
       }
 
-      var savedItem = await _context.TodoItems.Where(x => x.Id == id).SingleOrDefaultAsync();
-      if (savedItem is null)
+      var result = await _dataService.Update(todoItem);
+      if (result is null)
       {
         return NotFound();
       }
-
-      savedItem.IsCompleted = todoItem.IsCompleted;
-      savedItem.Description = todoItem.Description;
-
-      await _context.SaveChangesAsync();
 
       return NoContent();
     }
@@ -74,21 +67,15 @@ namespace TodoList.Api.Controllers
       {
         return BadRequest("Description is required");
       }
-      else if (TodoItemDescriptionExists(todoItem.Description))
+
+      try
       {
+        var result = await _dataService.Create(todoItem);
+        return CreatedAtAction(nameof(GetTodoItem), new { id = todoItem.Id }, todoItem);
+      }
+      catch (DuplicateDescriptionException) {
         return BadRequest("Description already exists");
       }
-
-      _context.TodoItems.Add(todoItem);
-      await _context.SaveChangesAsync();
-
-      return CreatedAtAction(nameof(GetTodoItem), new { id = todoItem.Id }, todoItem);
-    }
-
-    private bool TodoItemDescriptionExists(string description)
-    {
-      return _context.TodoItems
-             .Any(x => x.Description.ToLowerInvariant() == description.ToLowerInvariant() && !x.IsCompleted);
     }
   }
 }

@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace TodoList.Data
 {
-  public class TodoItemService
+  //TODO: should be moved out to a separate project along with EF, data context and data models
+  public class TodoItemService: ITodoItemService
   {
     private readonly TodoContext _context;
 
