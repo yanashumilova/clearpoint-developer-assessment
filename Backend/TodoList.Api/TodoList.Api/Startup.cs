@@ -44,6 +44,7 @@ namespace TodoList.Api
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
+      // TODO: configure error handler to make sure those are logged and not exposed to the UI
       if (env.IsDevelopment())
       {
         app.UseDeveloperExceptionPage();
