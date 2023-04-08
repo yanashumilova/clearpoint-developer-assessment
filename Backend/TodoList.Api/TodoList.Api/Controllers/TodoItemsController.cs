@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
-using TodoList.Data;
+using TodoList.Core;
 
 namespace TodoList.Api.Controllers
 {
@@ -43,14 +43,14 @@ namespace TodoList.Api.Controllers
 
     // PUT: api/TodoItems/... 
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutTodoItem(Guid id, TodoItem todoItem)
+    public async Task<IActionResult> PutTodoItem(Guid id, TodoItemModel TodoItemModel)
     {
-      if (id != todoItem.Id)
+      if (id != TodoItemModel.Id)
       {
         return BadRequest();
       }
 
-      var result = await _dataService.Update(todoItem);
+      var result = await _dataService.Update(TodoItemModel);
       if (result is null)
       {
         return NotFound();
@@ -61,17 +61,17 @@ namespace TodoList.Api.Controllers
 
     // POST: api/TodoItems 
     [HttpPost]
-    public async Task<IActionResult> PostTodoItem(TodoItem todoItem)
+    public async Task<IActionResult> PostTodoItem(TodoItemModel TodoItemModel)
     {
-      if (string.IsNullOrEmpty(todoItem?.Description))
+      if (string.IsNullOrEmpty(TodoItemModel?.Description))
       {
         return BadRequest("Description is required");
       }
 
       try
       {
-        var result = await _dataService.Create(todoItem);
-        return CreatedAtAction(nameof(GetTodoItem), new { id = todoItem.Id }, todoItem);
+        var result = await _dataService.Create(TodoItemModel);
+        return CreatedAtAction(nameof(GetTodoItem), new { id = TodoItemModel.Id }, TodoItemModel);
       }
       catch (DuplicateDescriptionException) {
         return BadRequest("Description already exists");

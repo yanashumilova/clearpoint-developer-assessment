@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using TodoList.Api.Controllers;
-using TodoList.Data;
+using TodoList.Core;
 using Xunit;
 
 namespace TodoList.Api.UnitTests
@@ -18,13 +18,13 @@ namespace TodoList.Api.UnitTests
     {
       var dataService = Substitute.For<ITodoItemService>();
       dataService.GetAllPending().Returns(new[] {
-        new TodoItem
+        new TodoItemModel
         {
           Id = Guid.NewGuid(),
           IsCompleted = false,
           Description = "Pending 1",
         },
-        new TodoItem
+        new TodoItemModel
         {
           Id = Guid.NewGuid(),
           IsCompleted = false,
@@ -40,9 +40,9 @@ namespace TodoList.Api.UnitTests
       result.Should().BeOfType<OkObjectResult>();
 
       var okResult = result as OkObjectResult;
-      okResult.Value.Should().BeAssignableTo<IEnumerable<TodoItem>>();
+      okResult.Value.Should().BeAssignableTo<IEnumerable<TodoItemModel>>();
 
-      var items = okResult.Value as IEnumerable<TodoItem>;
+      var items = okResult.Value as IEnumerable<TodoItemModel>;
       items.Should().NotBeNull();
       items.Should().HaveCount(2)
           .And.Contain(x => x.Description == "Pending 1")
@@ -54,7 +54,7 @@ namespace TodoList.Api.UnitTests
     {
       var id = Guid.NewGuid();
       var dataService = Substitute.For<ITodoItemService>();
-      dataService.Get(id).Returns(new TodoItem
+      dataService.Get(id).Returns(new TodoItemModel
       {
         Id = id,
         IsCompleted = false,
@@ -69,9 +69,9 @@ namespace TodoList.Api.UnitTests
       result.Should().BeOfType<OkObjectResult>();
 
       var okResult = result as OkObjectResult;
-      okResult.Value.Should().BeOfType<TodoItem>();
+      okResult.Value.Should().BeOfType<TodoItemModel>();
 
-      var item = okResult.Value as TodoItem;
+      var item = okResult.Value as TodoItemModel;
       item.Should().NotBeNull();
       item.Id.Should().Be(id);
       item.Description.Should().Be("Pending 2");
@@ -83,7 +83,7 @@ namespace TodoList.Api.UnitTests
     {
       var id = Guid.NewGuid();
       var dataService = Substitute.For<ITodoItemService>();
-      dataService.Get(id).Returns(Task.FromResult<TodoItem>(null));
+      dataService.Get(id).Returns(Task.FromResult<TodoItemModel>(null));
 
       var sut = new TodoItemsController(dataService, Substitute.For<ILogger<TodoItemsController>>());
 
@@ -98,7 +98,7 @@ namespace TodoList.Api.UnitTests
     {
       var sut = new TodoItemsController(Substitute.For<ITodoItemService>(), Substitute.For<ILogger<TodoItemsController>>());
 
-      var result = await sut.PutTodoItem(Guid.NewGuid(), new TodoItem
+      var result = await sut.PutTodoItem(Guid.NewGuid(), new TodoItemModel
       {
         Id = Guid.NewGuid(),
         IsCompleted = true,
@@ -113,18 +113,18 @@ namespace TodoList.Api.UnitTests
     public async Task Return_NotFound_When_PutTodoItem_Given_DataServiceReturnsNull()
     {
       var id = Guid.NewGuid();
-      var todoItem = new TodoItem
+      var TodoItemModel = new TodoItemModel
       {
         Id = id,
         IsCompleted = true,
         Description = "updated item",
       };
       var dataService = Substitute.For<ITodoItemService>();
-      dataService.Update(todoItem).Returns(Task.FromResult<TodoItem>(null));
+      dataService.Update(TodoItemModel).Returns(Task.FromResult<TodoItemModel>(null));
 
       var sut = new TodoItemsController(dataService, Substitute.For<ILogger<TodoItemsController>>());
 
-      var result = await sut.PutTodoItem(id, todoItem);
+      var result = await sut.PutTodoItem(id, TodoItemModel);
 
       result.Should().NotBeNull();
       result.Should().BeOfType<NotFoundResult>();
@@ -134,20 +134,20 @@ namespace TodoList.Api.UnitTests
     public async Task Update_Item_When_PutTodoItem()
     {
       var id = Guid.NewGuid();
-      var todoItem = new TodoItem
+      var TodoItemModel = new TodoItemModel
       {
         Id = id,
         IsCompleted = true,
         Description = "updated item",
       };
       var dataService = Substitute.For<ITodoItemService>();
-      dataService.Update(todoItem).Returns(todoItem);
+      dataService.Update(TodoItemModel).Returns(TodoItemModel);
 
       var sut = new TodoItemsController(dataService, Substitute.For<ILogger<TodoItemsController>>());
 
-      var result = await sut.PutTodoItem(id, todoItem);
+      var result = await sut.PutTodoItem(id, TodoItemModel);
 
-      await dataService.Received(1).Update(todoItem);
+      await dataService.Received(1).Update(TodoItemModel);
 
       result.Should().NotBeNull();
       result.Should().BeOfType<NoContentResult>();
@@ -158,7 +158,7 @@ namespace TodoList.Api.UnitTests
     {
       var sut = new TodoItemsController(Substitute.For<ITodoItemService>(), Substitute.For<ILogger<TodoItemsController>>());
 
-      var result = await sut.PostTodoItem(new TodoItem
+      var result = await sut.PostTodoItem(new TodoItemModel
       {
         Id = Guid.NewGuid(),
         IsCompleted = false,
@@ -175,18 +175,18 @@ namespace TodoList.Api.UnitTests
     public async Task Return_BadRequest_When_PostTodoItem_DataServiceThrowsDuplicateDescriptionException()
     {
       var id = Guid.NewGuid();
-      var todoItem = new TodoItem
+      var TodoItemModel = new TodoItemModel
       {
         Id = id,
         IsCompleted = false,
         Description = "new item",
       };
       var dataService = Substitute.For<ITodoItemService>();
-      dataService.Create(todoItem).Returns(Task.FromException<TodoItem>(new DuplicateDescriptionException()));
+      dataService.Create(TodoItemModel).Returns(Task.FromException<TodoItemModel>(new DuplicateDescriptionException()));
 
       var sut = new TodoItemsController(dataService, Substitute.For<ILogger<TodoItemsController>>());
 
-      var result = await sut.PostTodoItem(todoItem);
+      var result = await sut.PostTodoItem(TodoItemModel);
 
       result.Should().NotBeNull();
       result.Should().BeOfType<BadRequestObjectResult>();
@@ -199,18 +199,18 @@ namespace TodoList.Api.UnitTests
     public async Task Create_NewItem_When_PostTodoItem()
     {
       var id = Guid.NewGuid();
-      var todoItem = new TodoItem
+      var TodoItemModel = new TodoItemModel
       {
         Id = id,
         IsCompleted = false,
         Description = "new item",
       };
       var dataService = Substitute.For<ITodoItemService>();
-      dataService.Create(todoItem).Returns(todoItem);
+      dataService.Create(TodoItemModel).Returns(TodoItemModel);
 
       var sut = new TodoItemsController(dataService, Substitute.For<ILogger<TodoItemsController>>());
 
-      var result = await sut.PostTodoItem(todoItem);
+      var result = await sut.PostTodoItem(TodoItemModel);
 
       result.Should().NotBeNull();
       result.Should().BeOfType<CreatedAtActionResult>();
@@ -220,9 +220,9 @@ namespace TodoList.Api.UnitTests
       createdAtActionResult.RouteValues.Should().HaveCount(1)
         .And.ContainKey("id");
       createdAtActionResult.RouteValues["id"].Should().Be(id);
-      createdAtActionResult.Value.Should().BeOfType<TodoItem>();
+      createdAtActionResult.Value.Should().BeOfType<TodoItemModel>();
 
-      var item = createdAtActionResult.Value as TodoItem;
+      var item = createdAtActionResult.Value as TodoItemModel;
       item.Should().NotBeNull();
       item.Id.Should().Be(id);
       item.IsCompleted.Should().BeFalse();

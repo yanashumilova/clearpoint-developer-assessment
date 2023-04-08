@@ -2,10 +2,10 @@ using System;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using TodoList.Data;
+using TodoList.Core;
 using Xunit;
 
-namespace TodoList.Api.UnitTests
+namespace TodoList.Data.UnitTests
 {
   public class TodoItemServiceShould
   {
@@ -128,7 +128,7 @@ namespace TodoList.Api.UnitTests
       var id = Guid.NewGuid();
       var sut = new TodoItemService(context);
 
-      var result = await sut.Update(new TodoItem
+      var result = await sut.Update(new TodoItemModel
       {
         Id = id,
         IsCompleted = true,
@@ -153,7 +153,7 @@ namespace TodoList.Api.UnitTests
 
       var sut = new TodoItemService(context);
 
-      var result = await sut.Update(new TodoItem
+      var result = await sut.Update(new TodoItemModel
       {
         Id = id,
         IsCompleted = true,
@@ -182,7 +182,7 @@ namespace TodoList.Api.UnitTests
 
       var sut = new TodoItemService(context);
 
-      var result = await sut.Update(new TodoItem
+      var result = await sut.Update(new TodoItemModel
       {
         Id = id,
         IsCompleted = true,
@@ -209,7 +209,7 @@ namespace TodoList.Api.UnitTests
 
       var sut = new TodoItemService(context);
 
-      var action = () => sut.Create(new TodoItem
+      var action = () => sut.Create(new TodoItemModel
       {
         IsCompleted = false,
         Description = "new item",
@@ -232,7 +232,7 @@ namespace TodoList.Api.UnitTests
 
       var sut = new TodoItemService(context);
 
-      var result = await sut.Create(new TodoItem
+      var result = await sut.Create(new TodoItemModel
       {
         IsCompleted = false,
         Description = "new item",
@@ -249,7 +249,7 @@ namespace TodoList.Api.UnitTests
 
       var sut = new TodoItemService(context);
 
-      var result = await sut.Create(new TodoItem
+      var result = await sut.Create(new TodoItemModel
       {
         IsCompleted = false,
         Description = "new item",

@@ -3,10 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TodoList.Core;
 
 namespace TodoList.Data
 {
-  //TODO: should be moved out to a separate project along with EF, data context and data models
   public class TodoItemService: ITodoItemService
   {
     private readonly TodoContext _context;
@@ -16,20 +16,20 @@ namespace TodoList.Data
       _context = context;
     }
 
-    public async Task<IEnumerable<TodoItem>> GetAllPending()
+    public async Task<IEnumerable<TodoItemModel>> GetAllPending()
     {
       var results = await _context.TodoItems.Where(x => !x.IsCompleted).ToListAsync();
-      return results;
+      return results.Select(ToModel).ToList();
     }
 
-    public async Task<TodoItem> Get(Guid id)
+    public async Task<TodoItemModel> Get(Guid id)
     {
       var result = await _context.TodoItems.FindAsync(id);
 
-      return result;
+      return ToModel(result);
     }
 
-    public async Task<TodoItem> Update(TodoItem todoItem)
+    public async Task<TodoItemModel> Update(TodoItemModel todoItem)
     {
       var savedItem = await _context.TodoItems.Where(x => x.Id == todoItem.Id).SingleOrDefaultAsync();
       if (savedItem is null)
@@ -42,25 +42,46 @@ namespace TodoList.Data
 
       await _context.SaveChangesAsync();
 
-      return savedItem;
+      return ToModel(savedItem);
     }
 
-    public async Task<TodoItem> Create(TodoItem todoItem)
+    public async Task<TodoItemModel> Create(TodoItemModel todoItem)
     {
       if (TodoItemDescriptionExists(todoItem.Description)) {
         throw new DuplicateDescriptionException();
       }
 
-      _context.TodoItems.Add(todoItem);
+      var savedItem = new TodoItem
+      {
+        Id = todoItem.Id,
+        IsCompleted = todoItem.IsCompleted,
+        Description = todoItem.Description,
+      };
+      _context.TodoItems.Add(savedItem);
       await _context.SaveChangesAsync();
 
-      return todoItem;
+      return ToModel(savedItem);
     }
 
     private bool TodoItemDescriptionExists(string description)
     {
       return _context.TodoItems
              .Any(x => x.Description.ToLowerInvariant() == description.ToLowerInvariant() && !x.IsCompleted);
+    }
+
+    // could use a library such as AutoMapper or Mapster
+    // however this is not too many fields, so the use is not justified
+    // even with large set of fields it may be better to have custom mappers as it is frequently found that the data models, 
+    // core models and api models all have individual context requirements and do not translate one for one
+    private TodoItemModel ToModel(TodoItem item) {
+      if (item is null) return null;
+      
+      return new TodoItemModel
+      {
+        Id = item.Id,
+        IsCompleted = item.IsCompleted,
+        Description = item.Description,
+      };
     }
   }
 }
