@@ -168,6 +168,37 @@ namespace TodoList.Data.UnitTests
     }
 
     [Fact]
+    public async Task Throw_DuplicateDescriptionException_When_Update_GivenExistingDescription()
+    {
+      var id = Guid.NewGuid();
+      var context = InitContext();
+      context.TodoItems.Add(new TodoItem
+      {
+        Id = id,
+        IsCompleted = false,
+        Description = "updated item",
+      });
+      context.TodoItems.Add(new TodoItem
+      {
+        Id = Guid.NewGuid(),
+        IsCompleted = false,
+        Description = "existing description",
+      });
+      context.SaveChanges();
+
+      var sut = new TodoItemService(context);
+
+      var action = () => sut.Update(new TodoItemModel
+      {
+        Id = id,
+        IsCompleted = false,
+        Description = "existing description",
+      });
+
+      await action.Should().ThrowAsync<DuplicateDescriptionException>();
+    }
+
+    [Fact]
     public async Task Return_Item_When_Update()
     {
       var id = Guid.NewGuid();
@@ -211,6 +242,7 @@ namespace TodoList.Data.UnitTests
 
       var action = () => sut.Create(new TodoItemModel
       {
+        Id = Guid.NewGuid(),
         IsCompleted = false,
         Description = "new item",
       });
@@ -234,6 +266,7 @@ namespace TodoList.Data.UnitTests
 
       var result = await sut.Create(new TodoItemModel
       {
+        Id = Guid.NewGuid(),
         IsCompleted = false,
         Description = "new item",
       });
@@ -249,8 +282,10 @@ namespace TodoList.Data.UnitTests
 
       var sut = new TodoItemService(context);
 
+      var id = Guid.NewGuid();
       var result = await sut.Create(new TodoItemModel
       {
+        Id = id,
         IsCompleted = false,
         Description = "new item",
       });
@@ -258,7 +293,7 @@ namespace TodoList.Data.UnitTests
       var savedItem = await context.TodoItems.SingleAsync();
 
       result.Should().NotBeNull();
-      result.Id.Should().Be(savedItem.Id);
+      result.Id.Should().Be(id);
       result.IsCompleted.Should().BeFalse();
       result.Description.Should().Be("new item");
     }

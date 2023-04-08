@@ -131,6 +131,30 @@ namespace TodoList.Api.UnitTests
     }
 
     [Fact]
+    public async Task Return_BadRequest_When_PutTodoItem_Given_DataServiceThrowsDuplicateDescriptionException()
+    {
+      var id = Guid.NewGuid();
+      var TodoItemModel = new TodoItemModel
+      {
+        Id = id,
+        IsCompleted = false,
+        Description = "new item",
+      };
+      var dataService = Substitute.For<ITodoItemService>();
+      dataService.Update(TodoItemModel).Returns(Task.FromException<TodoItemModel>(new DuplicateDescriptionException()));
+
+      var sut = new TodoItemsController(dataService, Substitute.For<ILogger<TodoItemsController>>());
+
+      var result = await sut.PutTodoItem(id, TodoItemModel);
+
+      result.Should().NotBeNull();
+      result.Should().BeOfType<BadRequestObjectResult>();
+
+      var badRequestResult = result as BadRequestObjectResult;
+      badRequestResult.Value.Should().Be("Description already exists");
+    }
+
+    [Fact]
     public async Task Update_Item_When_PutTodoItem()
     {
       var id = Guid.NewGuid();
@@ -154,7 +178,7 @@ namespace TodoList.Api.UnitTests
     }
 
     [Fact]
-    public async Task Return_BadRequest_When_PostTodoItem_GivenEmptyDescription()
+    public async Task Return_BadRequest_When_PostTodoItem_Given_EmptyDescription()
     {
       var sut = new TodoItemsController(Substitute.For<ITodoItemService>(), Substitute.For<ILogger<TodoItemsController>>());
 
@@ -172,7 +196,7 @@ namespace TodoList.Api.UnitTests
     }
 
     [Fact]
-    public async Task Return_BadRequest_When_PostTodoItem_DataServiceThrowsDuplicateDescriptionException()
+    public async Task Return_BadRequest_When_PostTodoItem_Given_DataServiceThrowsDuplicateDescriptionException()
     {
       var id = Guid.NewGuid();
       var TodoItemModel = new TodoItemModel

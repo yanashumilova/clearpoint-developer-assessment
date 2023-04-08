@@ -50,10 +50,16 @@ namespace TodoList.Api.Controllers
         return BadRequest();
       }
 
-      var result = await _dataService.Update(TodoItemModel);
-      if (result is null)
+      try
       {
-        return NotFound();
+        var result = await _dataService.Update(TodoItemModel);
+        if (result is null)
+        {
+          return NotFound();
+        }
+      }
+      catch(DuplicateDescriptionException) {
+        return BadRequest("Description already exists");
       }
 
       return NoContent();

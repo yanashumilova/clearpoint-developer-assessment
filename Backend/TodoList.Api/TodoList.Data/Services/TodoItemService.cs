@@ -37,6 +37,11 @@ namespace TodoList.Data
         return null;
       }
 
+      if (savedItem.Description != todoItem.Description && TodoItemDescriptionExists(todoItem.Description))
+      {
+        throw new DuplicateDescriptionException();
+      }
+
       savedItem.IsCompleted = todoItem.IsCompleted;
       savedItem.Description = todoItem.Description;
 
