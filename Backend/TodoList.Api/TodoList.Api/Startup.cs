@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using TodoList.Data;
 
 namespace TodoList.Api
 {
@@ -22,6 +23,7 @@ namespace TodoList.Api
         {
             services.AddCors(options =>
             {
+                //TODO: This CORS policy may need to be reviewed
                 options.AddPolicy("AllowAllHeaders",
                       builder =>
                       {
@@ -37,6 +39,7 @@ namespace TodoList.Api
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "TodoList.Api", Version = "v1" });
             });
 
+            services.AddDbContext<TodoContext>(opt => opt.UseInMemoryDatabase("TodoItemsDB"));
             services.AddDbContext<TodoContext>(opt => opt.UseInMemoryDatabase("TodoItemsDB"));
         }
 

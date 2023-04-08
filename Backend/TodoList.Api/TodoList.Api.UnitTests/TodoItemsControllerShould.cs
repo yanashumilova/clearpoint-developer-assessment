@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using TodoList.Api.Controllers;
+using TodoList.Data;
 using Xunit;
 
 namespace TodoList.Api.UnitTests
