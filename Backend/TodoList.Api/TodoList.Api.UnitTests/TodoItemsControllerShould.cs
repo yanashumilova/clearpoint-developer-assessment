@@ -25,7 +25,7 @@ namespace TodoList.Api.UnitTests
 
       context.Database.EnsureDeleted();
       context.Database.EnsureCreated();
-      
+
       return context;
     }
 
@@ -120,18 +120,6 @@ namespace TodoList.Api.UnitTests
         IsCompleted = false,
         Description = "Pending 1"
       });
-      context.TodoItems.Add(new TodoItem
-      {
-        Id = Guid.NewGuid(),
-        IsCompleted = false,
-        Description = "Pending 2"
-      });
-      context.TodoItems.Add(new TodoItem
-      {
-        Id = Guid.NewGuid(),
-        IsCompleted = false,
-        Description = "Pending 3"
-      });
       context.SaveChanges();
 
       var sut = new TodoItemsController(context, Substitute.For<ILogger<TodoItemsController>>());
@@ -140,8 +128,81 @@ namespace TodoList.Api.UnitTests
 
       result.Should().NotBeNull();
       result.Should().BeOfType<NotFoundResult>();
+    }
 
-      var notFoundResult = result as NotFoundResult;
+    [Fact]
+    public async Task Return_400_When_PutTodoItem_Given_MismatchedIdInImput()
+    {
+      var context = InitContext();
+      
+      var sut = new TodoItemsController(context, Substitute.For<ILogger<TodoItemsController>>());
+
+      var result = await sut.PutTodoItem(Guid.NewGuid(), new TodoItem { 
+        Id = Guid.NewGuid(),
+        IsCompleted = true,
+        Description = "updated item"
+      });
+
+      result.Should().NotBeNull();
+      result.Should().BeOfType<BadRequestResult>();
+    }
+
+    [Fact]
+    public async Task Return_404_When_PutTodoItem_Given_ItemDoesntExist()
+    {
+      var context = InitContext();
+      context.TodoItems.Add(new TodoItem
+      {
+        Id = Guid.NewGuid(),
+        IsCompleted = false,
+        Description = "Pending 1"
+      });
+      context.SaveChanges();
+
+      var id = Guid.NewGuid();
+      var sut = new TodoItemsController(context, Substitute.For<ILogger<TodoItemsController>>());
+
+      var result = await sut.PutTodoItem(id, new TodoItem
+      {
+        Id = id,
+        IsCompleted = true,
+        Description = "updated item"
+      });
+
+      result.Should().NotBeNull();
+      result.Should().BeOfType<NotFoundResult>();
+    }
+
+    [Fact]
+    public async Task Update_Item_When_PutTodoItem()
+    {
+      var id = Guid.NewGuid();
+      var context = InitContext();
+      context.TodoItems.Add(new TodoItem
+      {
+        Id = id,
+        IsCompleted = false,
+        Description = "Pending 1"
+      });
+      context.SaveChanges();
+
+      var sut = new TodoItemsController(context, Substitute.For<ILogger<TodoItemsController>>());
+
+      var result = await sut.PutTodoItem(id, new TodoItem
+      {
+        Id = id,
+        IsCompleted = true,
+        Description = "updated item"
+      });
+
+      context.TodoItems.Should().HaveCount(1);
+      var item = await context.TodoItems.SingleAsync();
+      item.Id.Should().Be(id);
+      item.IsCompleted.Should().BeTrue();
+      item.Description.Should().Be("updated item");
+
+      result.Should().NotBeNull();
+      result.Should().BeOfType<NoContentResult>();
     }
   }
 }
