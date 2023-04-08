@@ -84,11 +84,6 @@ namespace TodoList.Api.Controllers
       return CreatedAtAction(nameof(GetTodoItem), new { id = todoItem.Id }, todoItem);
     }
 
-    private bool TodoItemIdExists(Guid id)
-    {
-      return _context.TodoItems.Any(x => x.Id == id);
-    }
-
     private bool TodoItemDescriptionExists(string description)
     {
       return _context.TodoItems
