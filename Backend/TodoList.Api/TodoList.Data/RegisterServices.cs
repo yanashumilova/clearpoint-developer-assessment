@@ -9,7 +9,7 @@ namespace TodoList.Data
     public static IServiceCollection RegisterDataServices(this IServiceCollection services)
     {
       services.AddDbContext<TodoContext>(opt => opt.UseInMemoryDatabase("TodoItemsDB"));
-      services.AddSingleton<ITodoItemService, TodoItemService>();
+      services.AddScoped<ITodoItemService, TodoItemService>();
       return services;
     }
   }
