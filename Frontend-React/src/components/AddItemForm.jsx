@@ -1,25 +1,25 @@
-import { Button, Container, Row, Col, Form, Stack } from 'react-bootstrap'
+import { Button, Container, Row, Col, Form, Stack, Alert } from 'react-bootstrap'
 import React, { useState } from 'react'
 import { v4 as uuidv4 } from 'uuid' //it may be a better idea to issue the id in the backend
 import { createTodoItem } from '../services/api'
 
 const AddItemForm = () => {
   const [description, setDescription] = useState('')
+  const [error, setError] = useState('')
 
   const handleDescriptionChange = (event) => {
     setDescription(event.target.value)
+    setError('')
   }
 
   async function handleAdd() {
-    try {
-      createTodoItem({ id: uuidv4(), description }) //the list needs to be refreshed manually to see the new item
-    } catch (error) {
-      console.error(error)
-    }
+    createTodoItem({ id: uuidv4(), description }) //the list needs to be refreshed manually to see the new item
+      .catch((error) => setError(error.message))
   }
 
   function handleClear() {
     setDescription('')
+    setError('')
   }
 
   return (
@@ -48,6 +48,9 @@ const AddItemForm = () => {
           </Button>
         </Stack>
       </Form.Group>
+      <Alert variant="danger" show={!!error}>
+        {error}
+      </Alert>
     </Container>
   )
 }

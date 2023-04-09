@@ -47,7 +47,7 @@ describe('ItemList should', () => {
     mockGetTodoItems
       .mockResolvedValueOnce(() => [{ id: '123' }, { id: '456', description: 'test' }, { id: '789' }])
       .mockResolvedValueOnce(() => [{ id: '123' }, { id: '789' }])
-    mockUpdateTodoItem.mockResolvedValueOnce(Promise.resolve())
+    mockUpdateTodoItem.mockResolvedValueOnce({})
 
     render(<ItemList />)
 
