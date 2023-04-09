@@ -1,19 +1,20 @@
 import { Button, Table } from 'react-bootstrap'
 import React, { useState, useEffect } from 'react'
+import { getTodoItems } from '../services/api'
 
 const ItemList = () => {
   const [items, setItems] = useState([])
-
+  console.log(items)
   async function getItems() {
     try {
-      alert('todo')
+      await getTodoItems().then(setItems)
     } catch (error) {
       console.error(error)
     }
   }
 
   useEffect(() => {
-    // todo
+    getItems()
   }, [])
 
   async function handleMarkAsComplete(item) {
