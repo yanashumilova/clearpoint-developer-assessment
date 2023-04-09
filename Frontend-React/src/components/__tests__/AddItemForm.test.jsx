@@ -79,4 +79,20 @@ describe('AddItemForm should', () => {
       expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     })
   })
+
+  it('clear error and input when succeeded', async () => {
+    mockCreateTodoItem.mockRejectedValueOnce(new Error('something went wrong')).mockResolvedValueOnce({})
+    render(<AddItemForm />)
+
+    const input = screen.getByRole('textbox')
+    await userEvent.type(input, 'test item')
+    await userEvent.click(screen.getByRole('button', { name: /add/i }))
+    await screen.findByRole('alert')
+    await userEvent.click(screen.getByRole('button', { name: /add/i }))
+
+    await waitFor(() => {
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
+    expect(input.value).toBe('')
+  })
 })

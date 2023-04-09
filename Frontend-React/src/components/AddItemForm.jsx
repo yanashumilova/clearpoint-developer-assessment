@@ -14,6 +14,7 @@ const AddItemForm = () => {
 
   async function handleAdd() {
     createTodoItem({ id: uuidv4(), description }) //the list needs to be refreshed manually to see the new item
+      .then(handleClear)
       .catch((error) => setError(error.message))
   }
 
