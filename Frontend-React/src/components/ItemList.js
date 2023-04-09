@@ -1,34 +1,31 @@
-import { Button, Table } from 'react-bootstrap'
+import { Alert, Button, Table } from 'react-bootstrap'
 import React, { useState, useEffect } from 'react'
 import { getTodoItems, updateTodoItem } from '../services/api'
 
 const ItemList = () => {
   const [items, setItems] = useState([])
+  const [error, setError] = useState('')
 
   async function getItems() {
-    try {
-      await getTodoItems().then(setItems)
-    } catch (error) {
-      console.error(error)
-    }
+    setError('')
+    await getTodoItems()
+      .then(setItems)
+      .catch((error) => setError(error.message))
   }
 
   useEffect(() => {
-    getItems()
+    getItems().catch((error) => setError(error.message))
   }, [])
 
   async function handleMarkAsComplete(item) {
-    try {
-      // TODO: it may be preferable to have a targeted "markCompleted" endpoint instead
-      //       of using generic update to avoid unexpected changes to other fields
-      await updateTodoItem({ ...item, isCompleted: true })
-        //if the lists are expected to be very long or items to contain a lot of data
-        //it is better to optimistically update the list locally instead of pulling all items
-        //pagination would need to be implemented as well in that case
-        .then(getItems)
-    } catch (error) {
-      console.error(error)
-    }
+    // TODO: it may be preferable to have a targeted "markCompleted" endpoint instead
+    //       of using generic update to avoid unexpected changes to other fields
+    await updateTodoItem({ ...item, isCompleted: true })
+      //if the lists are expected to be very long or items to contain a lot of data
+      //it is better to optimistically update the list locally instead of pulling all items
+      //pagination would need to be implemented as well in that case
+      .then(getItems)
+      .catch((error) => setError(error.message))
   }
 
   return (
@@ -39,6 +36,9 @@ const ItemList = () => {
           Refresh
         </Button>
       </h1>
+      <Alert variant="danger" show={!!error}>
+        {error}
+      </Alert>
 
       <Table striped bordered hover>
         <thead>
