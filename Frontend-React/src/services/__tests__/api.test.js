@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { createTodoItem, getTodoItems } from '../api'
+import { createTodoItem, getTodoItems, updateTodoItem } from '../api'
 
 jest.mock('axios')
 
@@ -38,6 +38,17 @@ describe('api should', () => {
     const response = await getTodoItems(data)
 
     expect(axios.get).toHaveBeenCalledWith('https://test.api/api/TodoItems')
+    expect(response).toEqual(data)
+  })
+
+  it('call put with data when updateTodoItem', async () => {
+    const data = { id: '123', description: 'test' }
+    axios.put.mockResolvedValue({ data })
+
+    process.env.REACT_APP_API_BASE_URL = 'https://test.api'
+    const response = await updateTodoItem(data)
+
+    expect(axios.put).toHaveBeenCalledWith('https://test.api/api/TodoItems/123', data)
     expect(response).toEqual(data)
   })
 })
