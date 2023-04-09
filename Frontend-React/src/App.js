@@ -3,8 +3,6 @@ import { Image, Alert, Button, Container, Row, Col, Table } from 'react-bootstra
 import React, { useState, useEffect } from 'react'
 import AddItemForm from './components/AddItemForm'
 
-const axios = require('axios')
-
 const App = () => {
   const [items, setItems] = useState([])
 
