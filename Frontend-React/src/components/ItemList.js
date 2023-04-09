@@ -1,10 +1,10 @@
 import { Button, Table } from 'react-bootstrap'
 import React, { useState, useEffect } from 'react'
-import { getTodoItems } from '../services/api'
+import { getTodoItems, updateTodoItem } from '../services/api'
 
 const ItemList = () => {
   const [items, setItems] = useState([])
-  console.log(items)
+
   async function getItems() {
     try {
       await getTodoItems().then(setItems)
@@ -19,7 +19,13 @@ const ItemList = () => {
 
   async function handleMarkAsComplete(item) {
     try {
-      alert('todo')
+      // TODO: it may be preferable to have a targeted "markCompleted" endpoint instead
+      //       of using generic update to avoid unexpected changes to other fields
+      await updateTodoItem({ ...item, isCompleted: true })
+        //if the lists are expected to be very long or items to contain a lot of data
+        //it is better to optimistically update the list locally instead of pulling all items
+        //pagination would need to be implemented as well in that case
+        .then(getItems)
     } catch (error) {
       console.error(error)
     }
@@ -44,7 +50,7 @@ const ItemList = () => {
         </thead>
         <tbody>
           {items.map((item) => (
-            <tr key={item.id}>
+            <tr key={item.id} data-testid={`item-${item.id}`}>
               <td>{item.id}</td>
               <td>{item.description}</td>
               <td>
