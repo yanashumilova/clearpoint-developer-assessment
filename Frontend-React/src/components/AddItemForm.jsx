@@ -1,5 +1,7 @@
 import { Button, Container, Row, Col, Form, Stack } from 'react-bootstrap'
 import React, { useState } from 'react'
+import { v4 as uuidv4 } from 'uuid' //it may be a better idea to issue the id in the backend
+import { createTodoItem } from '../services/api'
 
 const AddItemForm = () => {
   const [description, setDescription] = useState('')
@@ -10,7 +12,7 @@ const AddItemForm = () => {
 
   async function handleAdd() {
     try {
-      alert('todo')
+      createTodoItem({ id: uuidv4(), description })
     } catch (error) {
       console.error(error)
     }
