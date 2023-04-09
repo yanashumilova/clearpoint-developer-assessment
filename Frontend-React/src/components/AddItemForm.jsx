@@ -12,7 +12,7 @@ const AddItemForm = () => {
 
   async function handleAdd() {
     try {
-      createTodoItem({ id: uuidv4(), description })
+      createTodoItem({ id: uuidv4(), description }) //the list needs to be refreshed manually to see the new item
     } catch (error) {
       console.error(error)
     }

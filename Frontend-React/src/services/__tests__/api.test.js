@@ -18,7 +18,7 @@ describe('api should', () => {
 
   it('call post with data when createTodoItem', async () => {
     const data = { id: '123', description: 'test' }
-    axios.post.mockResolvedValue(data)
+    axios.post.mockResolvedValue({ data })
 
     process.env.REACT_APP_API_BASE_URL = 'https://test.api'
     const response = await createTodoItem(data)
@@ -32,7 +32,7 @@ describe('api should', () => {
       { id: '123', description: 'test' },
       { id: '456', description: 'another test' },
     ]
-    axios.get.mockResolvedValue(data)
+    axios.get.mockResolvedValue({ data })
 
     process.env.REACT_APP_API_BASE_URL = 'https://test.api'
     const response = await getTodoItems(data)
