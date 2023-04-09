@@ -5,7 +5,7 @@ const AddItemForm = () => {
   const [description, setDescription] = useState('')
 
   const handleDescriptionChange = (event) => {
-    // todo
+    setDescription(event.target.value)
   }
 
   async function handleAdd() {
